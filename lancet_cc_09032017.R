@@ -6,26 +6,61 @@ library(xlsx)
 library(tmap)
 library(tmaptools)
 library(RColorBrewer)
+library(data.table)
 
 
 myusername <- userInput()
 mypassword <- userInput()
 
-lancetdata <- read.csv("C:/Users/Matt/Documents/Matt - Work Stuff/r code/LANcET_CCMORTDATA.csv",colClasses=c("CNTRY"="character"))
+lancetdata <- tribble(
+  ~CNTRY,~MID,~LOW,~HIGH,
+  "AUT",467,121,797,
+  "BEL",2841,91,5007,
+  "BGR",44,36,63,
+  "CHE",1981,497,3247,
+  "CYP",143,62,279,
+  "CZE",375,48,628,
+  "DEUTNP",7319,620,12132,
+  "DNK",24,4,56,
+  "EST",12,0,22,
+  "ESP",41326,33495,53802,
+  "FIN",23,3,44,
+  "FRATNP",38728,14235,72947,
+  "GRC",2838,1520,5606,
+  "HRV",1145,624,1811,
+  "HUN",559,191,985,
+  "IRL",1566,476,4195,
+  "ISL",3,1,5,
+  "ITA",41965,23694,57401,
+  "LTU",15,1,25,
+  "LUX",392,12,820,
+  "LVA",17,1,30,
+  "MLT",0,0,0,
+  "NLD",1984,126,4114,
+  "NOR",15,4,34,
+  "POL",313,52,561,
+  "PRT",4573,3808,6284,
+  "ROU",177,97,301,
+  "SWE",52,10,113,
+  "SVN",561,251,847,
+  "SVK",63,17,118,
+  "GBR_NP",2515,388,7484
+)
+  read.csv("C:/Users/Matt/Documents/Matt - Work Stuff/r code/LANcET_CCMORTDATA.csv",colClasses=c("CNTRY"="character"))
 
 Countries <- getHMDcountries()
 
-deaths <- do.call(rbind, lapply(Countries, function(CNTRY){
+deaths <- rbindlist(lapply(Countries, function(CNTRY){
   Dat <- readHMDweb(CNTRY = CNTRY, item = "Deaths_5x1", fixup=TRUE, username = myusername, password = mypassword)
 Dat$CNTRY <- CNTRY
 Dat}))
 
-pops <- do.call(rbind, lapply(Countries, function(CNTRY){
+pops <- rbindlist(lapply(Countries, function(CNTRY){
   Dat <- readHMDweb(CNTRY = CNTRY, item = "Population", fixup=TRUE, username = myusername, password = mypassword)
   Dat$CNTRY <- CNTRY
   Dat}))
 
-lt <- do.call(rbind, lapply(Countries, function(CNTRY){
+lt <- rbindlist(lapply(Countries, function(CNTRY){
   Dat <- readHMDweb(CNTRY = CNTRY, item = "bltper_5x1", fixup=TRUE, username = myusername, password = mypassword)
   Dat$CNTRY <- CNTRY
   Dat}))
@@ -86,6 +121,12 @@ GBD_data <- read.csv("C:/Users/Matt/Documents/Matt - Work Stuff/r code/GBD_data.
          perdist = (meanval / countmeanval)) %>%
   rename(CNTRY = countrycode)
 
+ggplot(data=GBD_data, aes(x=Age, y=perdist)) +
+  geom_line(aes(group =CNTRY), col="gray", alpha=0.7) +
+  geom_smooth(span=0.3, se=F, col="black") +
+  theme_bw() +
+  scale_y_log10()
+
 
 a <-  left_join(a, lancetdata)  %>%
   select(Age, Pop, CNTRY, deaths, ax, MID, LOW, HIGH) %>%
@@ -100,8 +141,8 @@ a2 <- left_join(a, GBD_data) %>%
          qx_base = ifelse(Age == 80, 1, mx_base/(1+((width-ax)*mx_base))),
          qx_low = ifelse(Age == 80, 1, mx_low/(1+((width-ax)*mx_low))),
          qx_mid = ifelse(Age == 80, 1, mx_mid/(1+((width-ax)*mx_mid))),
-         qx_high = ifelse(Age == 80, 1, mx_high/(1+((width-ax)*mx_high)))
-  )
+         qx_high = ifelse(Age == 80, 1, mx_high/(1+((width-ax)*mx_high))))
+
 
 write.table(a2, "C:/Users/Matt/Documents/Matt - Work Stuff/r code/r_output2.txt", sep="\t")
 
