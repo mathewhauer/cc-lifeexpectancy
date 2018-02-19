@@ -5,7 +5,7 @@ output:
     keep_tex: true
     fig_caption: true
     latex_engine: pdflatex
-    template: C:/Users/Matt/Documents/Matt - Work Stuff/r code/delete/svm-latex-ms.tex
+    template: LATEX/svm-latex-ms.tex
 title: "Climate change projected to reduce European life expectancy"
 thanks: "All data and code that supports these conclusions are available upon request at hauer@uga.edu."
 author:
@@ -22,7 +22,7 @@ geometry: margin=1in
 #fontfamily: mathpazo
 fontsize: 12pt
 spacing: double
-bibliography: C:/Users/Matt/Documents/Untitled/ccmort.bib
+bibliography: LATEX/ccmort.bib
 biblio-style: nature
 fig_caption: true
 # use apsr or nature
