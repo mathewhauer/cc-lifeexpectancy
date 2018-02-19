@@ -8,10 +8,11 @@ library(tmaptools)
 library(RColorBrewer)
 library(data.table)
 
-
+###   Inputting user info for HMD
 myusername <- userInput()
 mypassword <- userInput()
 
+###   Importing the data from Forizeri et al.
 lancetdata <- tribble(
   ~CNTRY,~MID,~LOW,~HIGH,
   "AUT",467,121,797,
@@ -46,37 +47,42 @@ lancetdata <- tribble(
   "SVK",63,17,118,
   "GBR_NP",2515,388,7484
 )
-  read.csv("C:/Users/Matt/Documents/Matt - Work Stuff/r code/LANcET_CCMORTDATA.csv",colClasses=c("CNTRY"="character"))
-
+#  read.csv("data/LANcET_CCMORTDATA.csv",colClasses=c("CNTRY"="character"))
+ 
+###   Getting a country list from the HMD
 Countries <- getHMDcountries()
 
+###   Downloading the DEATHS data from the HMD in 5-year age groups by single-year.
 deaths <- rbindlist(lapply(Countries, function(CNTRY){
   Dat <- readHMDweb(CNTRY = CNTRY, item = "Deaths_5x1", fixup=TRUE, username = myusername, password = mypassword)
 Dat$CNTRY <- CNTRY
 Dat}))
 
+###   Downloading the POPULATION data from the HMD.
 pops <- rbindlist(lapply(Countries, function(CNTRY){
   Dat <- readHMDweb(CNTRY = CNTRY, item = "Population", fixup=TRUE, username = myusername, password = mypassword)
   Dat$CNTRY <- CNTRY
   Dat}))
 
+###   Downloading the LIFE TABLE data from the HMD in 5-year age groups by single-year.
 lt <- rbindlist(lapply(Countries, function(CNTRY){
   Dat <- readHMDweb(CNTRY = CNTRY, item = "bltper_5x1", fixup=TRUE, username = myusername, password = mypassword)
   Dat$CNTRY <- CNTRY
   Dat}))
 
-
+###   Topcoding the age groups to 80+ of the LIFE TABLE data, and summing the ax value.
 lt2 <- lt%>%
   mutate(Age = ifelse(Age >= 80, 80, Age)) %>%
   group_by(CNTRY, Year, Age)%>%
   summarise(ax = sum(ax))
 
+###   Topcoding the age groups of the DEATHS data and summing.
 deaths2 <- deaths %>%
   mutate(Age = ifelse(Age >=80, 80, Age)) %>%
   group_by(CNTRY, Year, Age) %>%
   summarise(deaths = sum(Total) )
 
-
+###   Recoding the Population data to single year of age
 pops2 <- pops %>%
   mutate(Age = ifelse(Age >= 80, 80, 
                ifelse(Age >= 75, 75,
@@ -97,18 +103,16 @@ pops2 <- pops %>%
   group_by(CNTRY, Year, Age) %>%
   summarise(Pop= sum(Total1))
 
-
-
-
-
+###   Joining the POPULATION, DEATHS, and LIFE TABLE data and subseting to the maximum year in the data.
 a <- left_join(pops2, deaths2)
 a <- left_join(a, lt2)
 a <- group_by(a, CNTRY, Age) %>%
   filter(Year == max(Year)) 
 
-
-
-GBD_data <- read.csv("C:/Users/Matt/Documents/Matt - Work Stuff/r code/GBD_data.csv") %>%
+###   Importing the GBD data.
+###   Data is 5-year age groups of mortality rates for Environmental heat and cold exposure for 2006-2015. 
+###   Analysis uses the mean of the last 10 years of data for this death distribution.
+GBD_data <- read.csv("data/GBD_data.csv") %>%
   #mutate(perdist = log(val)) %>%
   group_by(countrycode, Age) %>%
   summarise(meanval = mean(val),
@@ -122,10 +126,11 @@ GBD_data <- read.csv("C:/Users/Matt/Documents/Matt - Work Stuff/r code/GBD_data.
   rename(CNTRY = countrycode)
 
 ggplot(data=GBD_data, aes(x=Age, y=perdist)) +
-  geom_line(aes(group =CNTRY), col="gray", alpha=0.7) +
+  geom_line(aes(group =CNTRY, col=CNTRY), alpha=0.7) +
   geom_smooth(span=0.3, se=F, col="black") +
   theme_bw() +
-  scale_y_log10()
+  scale_y_log10()+
+  labs(y="log(Mortality Percentage Distribution)")
 
 
 a <-  left_join(a, lancetdata)  %>%
