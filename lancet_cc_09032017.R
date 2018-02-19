@@ -149,10 +149,10 @@ a2 <- left_join(a, GBD_data) %>%
          qx_high = ifelse(Age == 80, 1, mx_high/(1+((width-ax)*mx_high))))
 
 
-write.table(a2, "C:/Users/Matt/Documents/Matt - Work Stuff/r code/r_output2.txt", sep="\t")
+write.table(a2, "data/r_output2.txt", sep="\t")
 
-lt_lancet <- read.csv("C:/Users/Matt/Documents/Matt - Work Stuff/r code/lt_afterr_09032017.csv")
-lt_lifetables <- read.csv("C:/Users/Matt/Documents/Matt - Work Stuff/r code/lancet_lifetables_09032017.csv")
+lt_lancet <- read.csv("data/lt_afterr_09032017.csv")
+lt_lifetables <- read.csv("data/lancet_lifetables_09032017.csv")
 
 lt_lancet$'country name' <- lt_lancet$COUNTRY
 lt_lancet<- lt_lancet[order(lt_lancet$DIF_MID), ]

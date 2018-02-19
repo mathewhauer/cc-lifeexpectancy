@@ -43,8 +43,8 @@ library(tmaptools)
 
 
 
-lt_lancet <- read.csv("C:/Users/Matt/Documents/Matt - Work Stuff/r code/lt_afterr_09032017.csv")
-lt_lifetables <- read.csv("C:/Users/Matt/Documents/Matt - Work Stuff/r code/lancet_lifetables_09032017.csv")
+lt_lancet <- read.csv("data/lt_afterr_09032017.csv")
+lt_lifetables <- read.csv("data/lancet_lifetables_09032017.csv")
 
 lt_lancet$'country name' <- lt_lancet$COUNTRY
 lt_lancet<- lt_lancet[order(lt_lancet$DIF_MID), ]
