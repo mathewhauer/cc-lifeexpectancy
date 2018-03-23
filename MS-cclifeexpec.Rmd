@@ -36,10 +36,13 @@ knitr::opts_chunk$set(echo = TRUE)
 library(png)
 rm(list=ls())
 library(tidyverse)
-library(RColorBrewer)
-library(scales)
+library(HMDHFDplus)
+library(LifeTables)
+library(xlsx)
 library(tmap)
 library(tmaptools)
+library(RColorBrewer)
+library(data.table)
 
 
 

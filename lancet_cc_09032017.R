@@ -47,6 +47,34 @@ lancetdata <- tribble(
   "SVK",63,17,118,
   "GBR_NP",2515,388,7484
 )
+
+ec_agestandard <- tribble(
+  ~Age, ~StnrdPop,
+  0, 1600,
+  1, 6400,
+  5, 7000,
+  10,7000,
+  15,7000,
+  20,7000,
+  25,7000,
+  30,7000,
+  35,7000,
+  40,7000,
+  45,7000,
+  50,7000,
+  55,6000,
+  60,5000,
+  65,4000,
+  70,3000,
+  75,2000,
+  80,2000
+)
+
+countrycodes <- read.csv("https://raw.githubusercontent.com/lukes/ISO-3166-Countries-with-Regional-Codes/master/all/all.csv") %>%
+  rename(CNTRY = alpha.3,
+         COUNTRY = name) %>%
+  mutate(ISO3 = CNTRY) %>%
+  select(COUNTRY, CNTRY, ISO3)
 #  read.csv("data/LANcET_CCMORTDATA.csv",colClasses=c("CNTRY"="character"))
  
 ###   Getting a country list from the HMD
@@ -86,6 +114,7 @@ deaths2 <- deaths %>%
 pops2 <- pops %>%
   mutate(Age = ifelse(Age >= 80, 80, 
                ifelse(Age >= 75, 75,
+               ifelse(Age >= 70, 70,
                ifelse(Age >= 65, 65,
                ifelse(Age >= 60, 60,
                ifelse(Age >= 55, 55,
@@ -99,7 +128,7 @@ pops2 <- pops %>%
                ifelse(Age >= 15, 15,
                ifelse(Age >= 10, 10,
                ifelse(Age >= 5,  5,
-               ifelse(Age >= 1,  1, Age))))))))))))))))) %>%
+               ifelse(Age >= 1,  1, Age)))))))))))))))))) %>%
   group_by(CNTRY, Year, Age) %>%
   summarise(Pop= sum(Total1))
 
@@ -146,11 +175,62 @@ a2 <- left_join(a, GBD_data) %>%
          qx_base = ifelse(Age == 80, 1, mx_base/(1+((width-ax)*mx_base))),
          qx_low = ifelse(Age == 80, 1, mx_low/(1+((width-ax)*mx_low))),
          qx_mid = ifelse(Age == 80, 1, mx_mid/(1+((width-ax)*mx_mid))),
-         qx_high = ifelse(Age == 80, 1, mx_high/(1+((width-ax)*mx_high))))
+         qx_high = ifelse(Age == 80, 1, mx_high/(1+((width-ax)*mx_high)))) %>%
+  group_by(CNTRY) %>%
+  mutate(lx_base = ifelse(is.na(lag(cumprod(1-qx_base),1)*100000), 100000, lag(cumprod(1-qx_base),1)*100000),
+         dx_base = qx_base*lx_base,
+         Lx_base = ifelse(Age == 80, (lx_base/mx_base), ax * lx_base + (width-ax) * lead(lx_base,1)),
+         Tx_base = rev(cumsum(rev(Lx_base))),
+         ex_base = Tx_base/lx_base,
+         lx_low = ifelse(is.na(lag(cumprod(1-qx_low),1)*100000), 100000, lag(cumprod(1-qx_low),1)*100000),
+         dx_low = qx_low*lx_low,
+         Lx_low = ifelse(Age == 80, (lx_low/mx_low), ax * lx_low + (width-ax) * lead(lx_low,1)),
+         Tx_low = rev(cumsum(rev(Lx_low))),
+         ex_low = Tx_low/lx_low,
+         lx_mid = ifelse(is.na(lag(cumprod(1-qx_mid),1)*100000), 100000, lag(cumprod(1-qx_mid),1)*100000),
+         dx_mid = qx_mid*lx_mid,
+         Lx_mid = ifelse(Age == 80, (lx_mid/mx_mid), ax * lx_mid + (width-ax) * lead(lx_mid,1)),
+         Tx_mid = rev(cumsum(rev(Lx_mid))),
+         ex_mid = Tx_mid/lx_mid,
+         lx_high = ifelse(is.na(lag(cumprod(1-qx_high),1)*100000), 100000, lag(cumprod(1-qx_high),1)*100000),
+         dx_high = qx_high*lx_high,
+         Lx_high = ifelse(Age == 80, (lx_high/mx_high), ax * lx_high + (width-ax) * lead(lx_high,1)),
+         Tx_high = rev(cumsum(rev(Lx_high))),
+         ex_high = Tx_high/lx_high,
+         DIF_LOW = ex_low - ex_base,
+         DIF_MID = ex_mid - ex_base,
+         DIF_HIGH = ex_high - ex_base)
 
 
-write.table(a2, "data/r_output2.txt", sep="\t")
+# write.table(a2, "data/r_output2.txt", sep="\t")
 
+lt_lancet <- a2 %>%
+  filter(Age == 0) %>%
+  mutate(Base_e0 = ex_base,
+         LOW_e0 = ex_low,
+         MID_e0 = ex_mid,
+         HIGH_e0 = ex_high) %>%
+  #group_by(CNTRY) %>%
+   dplyr::select(CNTRY, Base_e0, LOW_e0, MID_e0, HIGH_e0, DIF_LOW, DIF_MID, DIF_HIGH) %>%
+  ungroup() %>%
+ arrange(DIF_MID) %>%
+  mutate(RANK = row_number(),
+         dif_mid = round(DIF_MID, 2)) %>%
+  left_join(., countrycodes) %>%
+  mutate(COUNTRY = case_when(
+    CNTRY == "FRATNP" ~ "France",
+    CNTRY == "DEUTNP" ~ "Germany",
+    CNTRY == "GBR_NP" ~ "Great Britain",
+    TRUE ~ as.character(COUNTRY)),
+    ISO3 = case_when(
+      CNTRY == "FRATNP" ~ "FRA",
+      CNTRY == "DEUTNP" ~ "DEU",
+      CNTRY == "GBR_NP" ~ "GBR",
+      TRUE ~ as.character(ISO3)),
+    Test = ISO3)
+
+
+%>%
 lt_lancet <- read.csv("data/lt_afterr_09032017.csv")
 lt_lifetables <- read.csv("data/lancet_lifetables_09032017.csv")
 
@@ -158,7 +238,7 @@ lt_lancet$'country name' <- lt_lancet$COUNTRY
 lt_lancet<- lt_lancet[order(lt_lancet$DIF_MID), ]
 lt_lancet$'country name' <- factor(lt_lancet$'country name', levels = lt_lancet$'country name')
 
-ggplot(lt_lancet, aes(x=RANK, y=DIF_MID, ymin = DIF_LOW, ymax = DIF_HIGH, label=DIF_MID)) +
+ggplot(lt_lancet, aes(x=RANK, y=DIF_MID, ymin = DIF_LOW, ymax = DIF_HIGH, label=dif_mid)) +
   geom_pointrange(stat="identity") +
   geom_point(stat="identity", fill="black", size=8) +
    geom_hline(yintercept=0) +
