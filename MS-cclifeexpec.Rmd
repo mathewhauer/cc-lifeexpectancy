@@ -73,11 +73,12 @@ library(tmap)
 library(tmaptools)
 library(RColorBrewer)
 library(data.table)
+library(getPass)
 
 ###   Inputting user info for HMD
 
-myusername <- "hauer@uga.edu"
-mypassword <- "fuckhead"
+myusername <- getPass()
+mypassword <- getPass()
 
 ###   Importing the data from Forizeri et al.
 lancetdata <- tribble(
