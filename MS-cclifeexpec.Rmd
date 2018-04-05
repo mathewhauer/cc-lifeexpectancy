@@ -4,7 +4,7 @@ output:
     citation_package: natbib
     keep_tex: true
     fig_caption: true
-    latex_engine: pdflatex
+    latex_engine: xelatex
     template: LATEX/svm-latex-ms.tex
 title: "Climate change projected to reduce European life expectancy"
 thanks: "All data and code that supports these conclusions are available as supplementary materials."
@@ -24,8 +24,8 @@ fontsize: 12pt
 spacing: double
 bibliography: LATEX/ccmort.bib
 biblio-style: nature
-fig_caption: true
 # use apsr or nature
+fig_caption: true
 header-includes:
 - \usepackage[all]{nowidow}
 - \usepackage{rotating}
@@ -76,8 +76,10 @@ library(data.table)
 library(getPass)
 
 ###   Inputting user info for HMD
+
 myusername <- getPass(msg = "HMD username: ", noblank = FALSE, forcemask = FALSE)
 mypassword <- getPass(msg = "HMD password: ", noblank = FALSE, forcemask = FALSE)
+
 
 ###   Importing the data from Forizeri et al.
 lancetdata <- tribble(
@@ -377,7 +379,7 @@ To convert excess mortality to life expectancy, we use data gathered from the HM
 We then recalculated age-specific mortality rates in five-year life tables by adding the climate change mortality onto the underlying mortality data and create four subsequent life tables ($baseline$, $low$, $mid$, $high$) using standard life table techniques [@wunsch2013life] based on the published confidence intervals from [@forzieri2017increasing]. We used a variant of the cause-deleted life tables approach [@brand2005approximations;@beltran2008integrated] to measure the impact of excess mortality on life expectancy at birth or $e_0$. Changes in life expectancy are reported based on differentials from $e_0$ between the 2080s and the most recent complete life table in the HMD. Complete life tables for all countries are available in the Supplementary Dataset and all equations are located in the Supplementary Information.
 
 <!-- # Results -->
-We find that climate change could alter life expectancy by `r round(mean(lt_lancet$DIF_MID),2)` years (-2.5 months (`r round(mean(lt_lancet$DIF_LOW),2)` - `r round(mean(lt_lancet$DIF_HIGH),2)` years)) in the average European country (**\autoref{figure1}**). This reduction is comparable to mortality due to influenza and pneumonia [@arias2013united] in the United States. Although the average European country could see a change of `r round(mean(lt_lancet$DIF_MID),2)` years, several countries are likely to experience considerably greater reductions in life expectancy. Luxembourg could see a reduction of up to `r round(lt_lancet$DIF_HIGH[which(lt_lancet$CNTRY == "LUX")],2)*-1` years and the medium-variant of climate hazards could cost the average Spaniard `r round(lt_lancet$DIF_MID[which(lt_lancet$CNTRY == "ESP")],2)*-1` years of life.
+We find that climate change could alter life expectancy by `r round(mean(lt_lancet$DIF_MID),2)` years (-2.5 months (`r round(mean(lt_lancet$DIF_LOW),2)` to `r round(mean(lt_lancet$DIF_HIGH),2)` years)) in the average European country (**\autoref{figure1}**). This reduction is comparable to mortality due to influenza and pneumonia [@arias2013united] in the United States. Although the average European country could see a change of `r round(mean(lt_lancet$DIF_MID),2)` years, several countries are likely to experience considerably greater reductions in life expectancy. Luxembourg could see a reduction of up to `r round(lt_lancet$DIF_HIGH[which(lt_lancet$CNTRY == "LUX")],2)*-1` years and the medium-variant of climate hazards could cost the average Spaniard `r round(lt_lancet$DIF_MID[which(lt_lancet$CNTRY == "ESP")],2)*-1` years of life.
 
 ```{r figure1, echo = FALSE, fig.cap=paste("Change in life expectancy at birth ($e_0$) due to business-as-usual climate change. We report changes in life expectancies due to climate change for twenty-eight European countries. The central values represent the ensemble median while the stems represent the upper and lower bounds of the inter-model climate variability.\\label{figure1}")}
 
@@ -421,6 +423,7 @@ While Forzieri et al's [@forzieri2017increasing] results suggest that the greate
 
 <!-- # Discussion -->
 In this article, we demonstrate the impact climate change could have on life expectancy at birth in twenty-eight European countries. Previous studies on climate change and excess mortality potentially miscommunicate the impact climate change could have on human mortality. Contrary to excess mortality estimates, life expectancy is routinely used as a primary metric for communicating overall health outcomes and enjoys widespread use by major international organizations [@world2015world;@marmot2012building;@salomon2012healthy]. Life expectancy and its derivatives are the recommended metrics for population health [@parrish2010peer]. Additionally, it connects mortality estimates into intuitively understandable metrics, translating global estimates of mortality into individual outcomes. Our work reveals the extent to which climate change could reduce the average person's longevity by the end of the century, the first study of its kind, significantly expanding our understanding of climate change and public health; thus linking two of the major areas in current developmental and sustainability discussion at both national and international levels [@abel2016meeting]. 
+
 
 ```{r echo = FALSE, warning= FALSE, message = FALSE}
 
@@ -500,7 +503,57 @@ testtbl<- standard %>%
 
 ```
 
+<!-- # Results -->
+We find that climate change could alter life expectancy by `r round(mean(lt_lancet$DIF_MID),2)` years (-2.5 months (`r round(mean(lt_lancet$DIF_LOW),2)` - `r round(mean(lt_lancet$DIF_HIGH),2)` years)) in the average European country (**Fig. 1**). Although the average European country could see a change of -0.22 years, several countries are likely to experience considerably greater reductions in life expectancy. Luxembourg could see a change of up to -2.2 years and the medium-variant of climate hazards could cost the average Spaniard 0.98 years of life.
+
+The overall reduction in $e_0$ is comparable to mortality due to influenza and pneumonia [@arias2013united] in the United States. **Table 1** reports the ranking of Climate Change compared to the major causes of death (COD) in European countries using age-standardised death rates and the standard European population [@pace2013revision] for the year 2013. In three European countries (Spain, Luxembourg, Italy), Climate Change could become a top three COD. In Spain (high = `r round(standard$ASDR_high[which(standard$COUNTRY == "Spain")],2)`), Luxembourg (high = `r round(standard$ASDR_high[which(standard$COUNTRY == "Luxembourg")],2)`), France (high = `r round(standard$ASDR_high[which(standard$COUNTRY == "France")],2)`), and Italy (high = `r round(standard$ASDR_high[which(standard$COUNTRY == "Italy")],2)`) Climate Change could become the leading cause of death if Climate Change is more extreme than anticipated. Only all circulatory diseases combined and all cancers combined would cause more deaths.
+
+```{r echo = FALSE, fig.cap=paste("Change in life expectancy at birth ($e_0$) due to business-as-usual climate change. We report changes in life expectancies due to climate change for twenty-eight European countries. The central values represent the ensemble median while the stems represent the upper and lower bounds of the inter-model climate variability.")}
+
+ggplot(lt_lancet, aes(x=RANK, y=DIF_MID, ymin = DIF_LOW, ymax = DIF_HIGH, label=dif_mid)) +
+  geom_pointrange(stat="identity") +
+  geom_point(stat="identity", fill="black", size=8) +
+   geom_hline(yintercept=0) +
+  geom_text(color="white", size=2) +
+  #scale_x_discrete(limits = rev(levels(the_factor)))
+  scale_x_reverse(breaks = lt_lancet$RANK, labels=lt_lancet$COUNTRY) +
+  coord_flip() +
+  theme_bw() +
+  #ylim(-2, 2) +
+  theme(panel.grid.minor = element_blank()) +
+ 
+   labs(y=expression(Delta* e[0]),
+        x= "Country")
+```
+
+
+
+Our results also suggest climate change mortality differentials are likely to unfold along highly uneven geographies. Whereas many Northern European countries could experience negligible impacts on life expectancy, five European countries could see life expectancy changes in excess of -0.5 years (Luxembourg, Spain, Italy, France, and Ireland). This group of countries could see life expectancy changes of more than -1.0 years if climate change hazards are more intense than anticipated. In some countries, climate change could thus become a bigger killer than trachea, bronchus, and lung malignant neoplasms (-0.85 years), acute myocardial infarction (-0.87 years), or all accident related mortality (-0.84 years) [@arias2013united] by the end of the century.
+
+```{r echo = FALSE, warning= FALSE, message = FALSE, fig.cap=paste("Estimated reduction in life expectancy at birth ($e_0$) by the 2080s under the $MID$ scenario.")}
+
+data(Europe)
+Europe2 <- append_data(Europe, lt_lancet, key.shp = "iso_a3", key.data = "ISO3", ignore.na = TRUE)
+
+bbeur <- bb(Europe2, xlim = c(0,0.75), ylim=c(0,1), relative = TRUE)
+
+  tm_shape(Europe2) +
+  tm_fill("DIF_MID", title = expression(Delta* e[0 ~italic(MID)]), palette = "YlOrBr", style = "jenks") +
+  tm_borders(alpha = 0.5) +  
+  tm_text("Test" , size="AREA", root=5) +
+  tm_format_Europe() 
+```
+
+
+While Forzieri et al's [@forzieri2017increasing] results suggest that the greatest climate change related mortality will unfold along a north-south gradient, we find the greatest reduction in life expectancy unfolds along an east-west gradient (**Fig. 2**). The most westerly European countries tend to have the greatest reductions. Neighboring pairs of countries at similar latitudes could experience vastly different mortality regimes, but neighboring pairs of countries at similar longitudes seem to experience more similar mortality regimes from climate change. Emergent research in Atmospheric Rivers suggest Western Europe could be more susceptible to these types of events [@ramos2015daily]. Additionally, these results point to the importance of converting excess mortality into life expectancy to properly quantify the effects of climate change mortality.
+
+<!-- # Discussion -->
+In this article, we demonstrate the impact climate change could have on life expectancy at birth in twenty-eight European countries. Previous studies on climate change and excess mortality potentially misrepresent the impact climate change could have on human mortality. Contrary to excess mortality estimates, life expectancy is routinely used as a primary metric for communicating overall health outcomes and enjoys widespread use by major international organizations [@world2015world;@marmot2012building;@salomon2012healthy]. Life expectancy and its derivatives are the recommended metrics for population health [@parrish2010peer]. Additionally, it connects mortality estimates into intuitively understandable metrics, translating global estimates of mortality into individual outcomes. Our work reveals the extent to which climate change could reduce the average person's longevity by the end of the century, the first study of its kind, significantly expanding our understanding of climate change and public health; thus linking two of the major areas in current developmental and sustainability discussion at both national and international levels [@abel2016meeting]. 
+
+
+
 \begin{sidewaystable}
+
 \caption{\textbf{Rankings of major causes of death in select European Countries based on a standardised death rate (per 100,000 inhabitants).} Data for other causes of death comes from Eurostat.} \label{Table1}
 \rowcolors{2}{gray!25}{white}
 \small
@@ -521,6 +574,7 @@ Switzerland & \makecell{Heart\\Disease\\ 97.8} & \makecell{Respiratory\\Diseases
 Belgium & \makecell{Respiratory\\Diseases\\ 95.7} & \makecell{Heart\\Disease\\ 72.4} & \makecell{Lung\\Cancer\\ 61.6} & \makecell{Dis. of the\\Nervous Sys\\ 46.5} & \makecell{Colorectal\\Cancer\\ 26.1} & \cellcolor{blue!25}\makecell{\cellcolor{blue!25}Climate\\\cellcolor{blue!25}Change\\\cellcolor{blue!25} 21.23\\\cellcolor{blue!25}\begin{tiny}(0.68 - 37.4)\end{tiny}} & \makecell{Suicide\\ 17.3} & \makecell{Transport\\Accidents\\ 6.7} \\ 
    \hline
 \end{tabularx}
+
 \end{sidewaystable}
 
 Without adaptation measures, our results suggest climate change could emerge as a significant new mortality vector and could pose a major public health threat for some European countries by the end of the century, echoing previous findings [@forzieri2017increasing;@patz2005impact]. Life expectancy has steadily risen across the world for the last century [@gerland2014world] and our results suggest that climate change alone could spur a sharp reversal in these trends in some countries. We expect two European countries to see life expectancy reductions more than one year under the middle scenario (Luxembourg and Spain), but if climate change has a greater impact on mortality than anticipated, five European countries (Luxembourg, Spain, Italy, France, Ireland) could see life expectancy reductions more than one year with Luxembourg experiencing a reduction of more than two. These findings highlight the hyperlocalized impacts of climate change [@kendon2014heavier;@rosenzweig2010cities;@forzieri2017increasing]
