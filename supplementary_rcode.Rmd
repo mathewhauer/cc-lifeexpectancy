@@ -1,3 +1,32 @@
+---
+title: "Climate Change Projected to Reduce European Life Expectancy"
+output:
+  word_document: default
+  pdf_document: default
+date: "April 5, 2018"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+```
+
+## R Data Load and Processing The following code chunk will 
+1. Import the underlying Forzieri et al data. 
+2. Import the Standard European Population from EuroStat. 
+3. Import the leading causes of death with age-standardized death rates from EuroStat. 
+4. Import the Global Burden of Disease data. This data is located on github. 
+5. Download all of the Human Mortality Database data.
+
+To successfully run this code, several R pacakgse must be installed and these
+packages are located just below this text section but are tidyverse, HMHFDplus,
+tmap, tmaptools, RColorBrewer, data.table, and getPass.
+
+To successfully run this code, you must also have an account at the HMD and
+input your username and password when prompted.
+
+
+```{r DataLoadAndProcessing}
 rm(list=ls())
 library(tidyverse)
 library(HMDHFDplus)
@@ -195,14 +224,6 @@ GBD_data <- read.csv("data/GBD_data.csv") %>%
          perdist = (meanval / countmeanval)) %>%
   rename(CNTRY = countrycode)
 
-# Supp Figure 1
-ggplot(data=GBD_data, aes(x=Age, y=perdist)) +
-  geom_line(aes(group =CNTRY, col=CNTRY), alpha=0.7) +
-  geom_smooth(span=0.3, se=F, col="black") +
-  theme_bw() +
-  scale_y_log10()+
-  labs(y="log(Mortality Percentage Distribution)")
-
 ################################
 #
 # MAKING THE LIFE TABLES
@@ -270,31 +291,83 @@ lt_lancet <- a2 %>%
       CNTRY == "GBR_NP" ~ "GBR",
       TRUE ~ as.character(ISO3)),
     Test = ISO3)
+```
 
 # Figure 1
+This chunk of code reproduces Figure 1.
+```{r Figure1}
+
 ggplot(lt_lancet, aes(x=RANK, y=DIF_MID, ymin = DIF_LOW, ymax = DIF_HIGH, label=dif_mid)) +
   geom_pointrange(stat="identity") +
   geom_point(stat="identity", fill="black", size=8) +
-  geom_hline(yintercept=0) +
+   geom_hline(yintercept=0) +
   geom_text(color="white", size=2) +
+  #scale_x_discrete(limits = rev(levels(the_factor)))
   scale_x_reverse(breaks = lt_lancet$RANK, labels=lt_lancet$COUNTRY) +
   coord_flip() +
   theme_bw() +
+  #ylim(-2, 2) +
   theme(panel.grid.minor = element_blank()) +
-  labs(y=expression(Delta* e[0]),
-       x= "Country")
+ 
+   labs(y=expression(Delta* e[0]),
+        x= "Country")
+```
 
 # Figure 2
+This chunk of code reproduecs Figure 2.
+```{r Figure2}
+
 data(Europe)
 Europe2 <- append_data(Europe, lt_lancet, key.shp = "iso_a3", key.data = "ISO3", ignore.na = TRUE)
+
 bbeur <- bb(Europe2, xlim = c(0,0.75), ylim=c(0,1), relative = TRUE)
-tm_shape(Europe2) +
+
+  tm_shape(Europe2) +
   tm_fill("DIF_MID", title = expression(Delta* e[0 ~italic(MID)]), palette = "YlOrBr", style = "jenks") +
   tm_borders(alpha = 0.5) +  
   tm_text("Test" , size="AREA", root=5) +
   tm_format_Europe() 
+```
+
+# Supplementay Figure 1
+This chunk of code reproduces the Supplementary Figure
+```{r suppfig}
+GBD_data <- read.csv("data/GBD_data.csv") %>%
+  #mutate(perdist = log(val)) %>%
+  group_by(countrycode, Age) %>%
+  summarise(meanval = mean(val),
+            upperval = mean(upper),
+            lowerval = mean(lower)) %>%
+  group_by(countrycode) %>%
+  mutate(countmeanval = sum(meanval),
+         countupperval = sum(upperval),
+         countlowerval = sum(lowerval),
+         perdist = (meanval / countmeanval)) %>%
+  rename(CNTRY = countrycode)
+
+ggplot(data=GBD_data, aes(x=Age, y=perdist)) +
+  geom_line(aes(color=CNTRY), alpha=1) +
+  geom_smooth(span=0.3, se=F, col="black", lwd =2) +
+  theme_bw() +
+  theme(legend.position = c(0.8,0.25),
+        legend.title=element_blank(),
+        legend.text=element_text(size=4),
+        legend.key.size = unit(1,"line")) +
+  guides(col = guide_legend(ncol = 4)) +
+  scale_y_log10()+
+  labs(y="log(Mortality Percentage Distribution)",
+       #title = "Mortality distribution of Heat-related mortality in 28 European countries",
+       caption = "Source: Global Burden of Disease")
+
+```
+
 
 # Table 1
+This chunk of code reproduces the data inside Table 1 in the main document.
+
+Note: the output from this table (the object testtbl) is formatted for latex rather than markdown. To completely reproduce that table, the output from testtbl must be pasted into a latex compiler and all forward slashes ("/") must be converted to backward slashes ("\").
+```{r Table1}
+
 standard <- left_join(a2, ec_agestandard) %>%
   left_join(., countrycodes) %>%
   select(Age, CNTRY, COUNTRY, mx_base, mx_low, mx_mid, mx_high, StnrdPop) %>%
@@ -343,3 +416,6 @@ testtbl<- standard %>%
   select(COUNTRY, Value, RANK) %>%
   spread(RANK, Value) %>%
   slice(match(selectcountries, COUNTRY))
+
+head(testtbl)
+```
