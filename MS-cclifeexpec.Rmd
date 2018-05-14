@@ -9,10 +9,10 @@ output:
 title: "Climate change projected to reduce European life expectancy"
 thanks: "All data and code that supports these conclusions are available as supplementary materials."
 author:
-# - name: Mathew E. Hauer^1^*
-#   affiliation: University of Georgia
-# - name: Alexis R. Santos^2^
-#   affiliation: Pennsylvania State University
+- name: Mathew E. Hauer^1^*
+  affiliation: University of Georgia
+- name: Alexis R. Santos^2^
+  affiliation: Pennsylvania State University
   
 abstract: "Climate change related estimates of excess mortality clearly demonstrate the dramatic impact on public health and human mortality from climate change [@patz2005impact;@aastrom2013attributing;@forzieri2017increasing;@staddon2014climate]. However, life expectancy at birth is more easily communicated and understood by the public, and controls for different geographic, economic, and demographic groups [@parrish2010peer]. No studies have comprehensively connected excess mortality due to climate change to anticipated reductions in life expectancy. Without properly situating the potential loss of life within the contexts of life expectancy, we risk misrepresenting cost of climate change on mortality. In this paper, we convert excess mortality estimates into potential reductions of life expectancy at birth and report the cost of climate change on human longevity. We find climate change could become the third largest life expectancy reducer behind heart disease and cancer in some European countries. Thus, the cost of inaction on climate change could approach one year of life in some countries."
 
@@ -40,11 +40,11 @@ header-includes:
 
 ---
 
-<!-- * Corresponding author. hauer@uga.edu. p: 706-542-9369. -->
+* Corresponding author. hauer@uga.edu. p: 706-542-9369.
 
-<!-- ^1^ Carl Vinson Institute of Government, University of Georgia. 201 N. Milledge Ave. Athens, GA USA 30602. -->
+^1^ Carl Vinson Institute of Government, University of Georgia. 201 N. Milledge Ave. Athens, GA USA 30602.
 
-<!-- ^2^ Department of Sociology and Criminology, Pennsylvania State University. 901 Oswald Tower, University Park, PA USA 16802. -->
+^2^ Department of Sociology and Criminology, Pennsylvania State University. 901 Oswald Tower, University Park, PA USA 16802.
 
 \newpage
 
@@ -508,42 +508,9 @@ We find that climate change could alter life expectancy by `r round(mean(lt_lanc
 
 The overall reduction in $e_0$ is comparable to mortality due to influenza and pneumonia [@arias2013united] in the United States. **Table 1** reports the ranking of Climate Change compared to the major causes of death (COD) in European countries using age-standardised death rates and the standard European population [@pace2013revision] for the year 2013. In three European countries (Spain, Luxembourg, Italy), Climate Change could become a top three COD. In Spain (high = `r round(standard$ASDR_high[which(standard$COUNTRY == "Spain")],2)`), Luxembourg (high = `r round(standard$ASDR_high[which(standard$COUNTRY == "Luxembourg")],2)`), France (high = `r round(standard$ASDR_high[which(standard$COUNTRY == "France")],2)`), and Italy (high = `r round(standard$ASDR_high[which(standard$COUNTRY == "Italy")],2)`) Climate Change could become the leading cause of death if Climate Change is more extreme than anticipated. Only all circulatory diseases combined and all cancers combined would cause more deaths.
 
-```{r echo = FALSE, fig.cap=paste("Change in life expectancy at birth ($e_0$) due to business-as-usual climate change. We report changes in life expectancies due to climate change for twenty-eight European countries. The central values represent the ensemble median while the stems represent the upper and lower bounds of the inter-model climate variability.")}
-
-ggplot(lt_lancet, aes(x=RANK, y=DIF_MID, ymin = DIF_LOW, ymax = DIF_HIGH, label=dif_mid)) +
-  geom_pointrange(stat="identity") +
-  geom_point(stat="identity", fill="black", size=8) +
-   geom_hline(yintercept=0) +
-  geom_text(color="white", size=2) +
-  #scale_x_discrete(limits = rev(levels(the_factor)))
-  scale_x_reverse(breaks = lt_lancet$RANK, labels=lt_lancet$COUNTRY) +
-  coord_flip() +
-  theme_bw() +
-  #ylim(-2, 2) +
-  theme(panel.grid.minor = element_blank()) +
- 
-   labs(y=expression(Delta* e[0]),
-        x= "Country")
-```
-
 
 
 Our results also suggest climate change mortality differentials are likely to unfold along highly uneven geographies. Whereas many Northern European countries could experience negligible impacts on life expectancy, five European countries could see life expectancy changes in excess of -0.5 years (Luxembourg, Spain, Italy, France, and Ireland). This group of countries could see life expectancy changes of more than -1.0 years if climate change hazards are more intense than anticipated. In some countries, climate change could thus become a bigger killer than trachea, bronchus, and lung malignant neoplasms (-0.85 years), acute myocardial infarction (-0.87 years), or all accident related mortality (-0.84 years) [@arias2013united] by the end of the century.
-
-```{r echo = FALSE, warning= FALSE, message = FALSE, fig.cap=paste("Estimated reduction in life expectancy at birth ($e_0$) by the 2080s under the $MID$ scenario.")}
-
-data(Europe)
-Europe2 <- append_data(Europe, lt_lancet, key.shp = "iso_a3", key.data = "ISO3", ignore.na = TRUE)
-
-bbeur <- bb(Europe2, xlim = c(0,0.75), ylim=c(0,1), relative = TRUE)
-
-  tm_shape(Europe2) +
-  tm_fill("DIF_MID", title = expression(Delta* e[0 ~italic(MID)]), palette = "YlOrBr", style = "jenks") +
-  tm_borders(alpha = 0.5) +  
-  tm_text("Test" , size="AREA", root=5) +
-  tm_format_Europe() 
-```
-
 
 While Forzieri et al's [@forzieri2017increasing] results suggest that the greatest climate change related mortality will unfold along a north-south gradient, we find the greatest reduction in life expectancy unfolds along an east-west gradient (**Fig. 2**). The most westerly European countries tend to have the greatest reductions. Neighboring pairs of countries at similar latitudes could experience vastly different mortality regimes, but neighboring pairs of countries at similar longitudes seem to experience more similar mortality regimes from climate change. Emergent research in Atmospheric Rivers suggest Western Europe could be more susceptible to these types of events [@ramos2015daily]. Additionally, these results point to the importance of converting excess mortality into life expectancy to properly quantify the effects of climate change mortality.
 
