@@ -1,0 +1,12 @@
+---
+title: "Response to reviewers: Climate change projected to reduce European life expectancy"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Nature Climate Change submission #: 14465
+
+asdf

@@ -1,0 +1,402 @@
+---
+title: "Untitled"
+author: "Mathew E. Hauer"
+date: "April 5, 2018"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+```
+
+## R Markdown
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+
+```{r DataLoadAndProcessing}
+rm(list=ls())
+library(tidyverse)
+library(HMDHFDplus)
+library(tmap)
+library(tmaptools)
+library(RColorBrewer)
+library(data.table)
+library(getPass)
+
+###   Inputting user info for HMD
+myusername <- getPass(msg = "HMD username: ", noblank = FALSE, forcemask = TRUE)
+mypassword <- getPass(msg = "HMD password: ", noblank = FALSE, forcemask = FALSE)
+
+###   Importing the data from Forizeri et al.
+lancetdata <- tribble(
+    ~CNTRY,  ~MID,  ~LOW, ~HIGH,
+     "AUT",   467,   121,   797,
+     "BEL",  2841,    91,  5007,
+     "BGR",    44,    36,    63,
+     "CHE",  1981,   497,  3247,
+     "CYP",   143,    62,   279,
+     "CZE",   375,    48,   628,
+  "DEUTNP",  7319,   620, 12132,
+     "DNK",    24,     4,    56,
+     "EST",    12,     0,    22,
+     "ESP", 41326, 33495, 53802,
+     "FIN",    23,     3,    44,
+  "FRATNP", 38728, 14235, 72947,
+     "GRC",  2838,  1520,  5606,
+     "HRV",  1145,   624,  1811,
+     "HUN",   559,   191,   985,
+     "IRL",  1566,   476,  4195,
+     "ISL",     3,     1,     5,
+     "ITA", 41965, 23694, 57401,
+     "LTU",    15,     1,    25,
+     "LUX",   392,    12,   820,
+     "LVA",    17,     1,    30,
+     "MLT",     0,     0,     0,
+     "NLD",  1984,   126,  4114,
+     "NOR",    15,     4,    34,
+     "POL",   313,    52,   561,
+     "PRT",  4573,  3808,  6284,
+     "ROU",   177,    97,   301,
+     "SWE",    52,    10,   113,
+     "SVN",   561,   251,   847,
+     "SVK",    63,    17,   118,
+  "GBR_NP",  2515,   388,  7484
+  )
+
+### European Standard Population from EuroStat
+ec_agestandard <- tribble(
+  ~Age, ~StnrdPop,
+     0,  1118.427,
+     1,  4338.143,
+     5,  5207.188,
+    10,   5378.67,
+    15,   6095.53,
+    20,  6646.578,
+    25,  7054.462,
+    30,  7211.366,
+    35,  7249.137,
+    40,  7288.966,
+    45,  7207.381,
+    50,  6904.728,
+    55,  6400.144,
+    60,  5798.191,
+    65,  4660.589,
+    70,   4031.35,
+    75,  3292.724,
+    80,  4116.422
+  )
+
+### COD standardized death rates from EuroStat
+europe_standarddr <- tribble(
+          ~COUNTRY, ~Circulatorydisease, ~Cancer, ~Heartdisease, ~LungCancer, ~Respiratorydiseases, ~Diseasesofthenervoussystem, ~Colorectalcancer, ~Suicide, ~TransportAccidents,
+           "EU-28",               373.6,   261.5,         126.3,        54.4,                 78.3,                        38.6,              30.5,     11.3,                 5.8,
+      "Luxembourg",               296.9,   260.7,          80.3,        59.6,                 63.8,                          38,              25.5,     13.4,                   6,
+           "Spain",                 245,   232.7,          68.2,        47.8,                 91.7,                        48.5,              33.6,      8.2,                 4.3,
+           "Italy",               310.1,   246.6,          98.3,        49.4,                 58.3,                        34.3,                27,      6.3,                 5.6,
+          "France",               202.9,   245.4,          49.3,        50.1,                   52,                        50.2,              26.1,     14.1,                 5.1,
+        "Portugal",               305.8,   242.1,          69.6,        36.4,                116.7,                        32.8,                35,     11.3,                 7.8,
+         "Croatia",               678.6,   336.4,         306.5,        65.2,                 59.7,                        21.3,                51,     16.8,                 8.9,
+         "Ireland",               309.9,   288.3,         147.5,        61.5,                125.9,                        48.7,              32.4,       11,                   4,
+        "Slovenia",               451.3,   299.9,         102.8,        58.6,                 66.3,                        21.1,              38.4,     18.9,                 6.7,
+     "Switzerland",                 280,   219.6,          97.8,        42.1,                 51.3,                        44.5,              22.8,     12.8,                 3.6,
+         "Belgium",               281.9,   252.6,          72.4,        61.6,                 95.7,                        46.5,              26.1,     17.3,                 6.7,
+          "Greece",               381.4,   249.3,           103,        61.9,                108.1,                        20.9,              23.3,        5,                 8.6,
+     "Netherlands",               271.7,   282.2,          62.4,        66.7,                 74.1,                        48.3,              32.9,     11.1,                 4.1,
+         "Germany",               403.5,   253.2,         142.8,          51,                   68,                        29.6,                29,     11.9,                 4.6,
+   "Great Britain",               264.9,   278.4,         118.4,        61.4,                130.9,                        47.6,              27.7,      7.1,                 2.8,
+         "Austria",               418.1,   249.3,         179.1,        47.5,                 46.6,                        32.6,              26.4,     15.3,                 5.8,
+        "Bulgaria",                1131,   242.4,         195.4,        45.5,                 58.1,                        15.3,              34.9,      9.9,                   9,
+  "Czech Republic",               615.2,   284.6,         333.1,        53.1,                 73.4,                        30.8,              37.9,     14.4,                78.8,
+         "Denmark",               256.6,   300.6,            81,        71.7,                115.7,                        42.9,              35.2,     11.9,                   4,
+         "Estonia",               699.6,   299.4,         295.5,        55.3,                 43.8,                        21.8,                36,     18.3,                 7.5,
+         "Finland",               378.8,   218.6,         199.2,          39,                 34.4,                         155,              22.6,     14.6,                 5.7,
+         "Hungary",               761.5,   348.1,         390.6,        89.8,                 78.6,                        19.9,                55,     19.4,                 8.1,
+          "Latvia",               882.7,   299.3,         442.7,        46.9,                 35.9,                        15.6,              34.2,       19,                12.4,
+       "Lithuania",               848.8,   276.2,         564.4,        46.1,                 42.1,                        20.8,              32.1,     31.5,                10.7,
+          "Norway",               272.6,   252.5,          95.7,        50.5,                 88.4,                        45.4,              36.4,      7.3,                   4,
+          "Poland",               591.4,   292.3,         129.1,        69.2,                 69.1,                        16.5,                36,     15.5,                10.3,
+        "Slovakia",               654.6,   324.1,         388.8,          50,                 74.9,                        29.5,              49.2,     10.8,                 8.5,
+          "Sweden",               338.3,   234.8,         131.2,        38.7,                 58.1,                        42.6,              29.2,     12.1,                 3.4,
+          "Cyprus",               351.8,     201,         108.7,        37.2,                 86.2,                        26.8,              16.7,      4.5,                 6.5,
+   "Liechtenstein",               296.4,     203,          73.7,        31.3,                 89.8,                        67.6,               6.8,     10.2,                10.3,
+           "Malta",               372.4,   233.5,         202.8,        43.2,                 96.6,                          21,              28.3,      8.3,                 2.5,
+         "Romania",               951.3,   273.2,         320.3,        54.2,                 78.4,                          21,              32.4,     11.4,                12.3,
+          "Serbia",               931.6,   298.3,         159.5,        69.4,                 79.7,                        27.3,              37.2,     15.9,                 7.6
+  )
+
+countrycodes <- read.csv("https://raw.githubusercontent.com/lukes/ISO-3166-Countries-with-Regional-Codes/master/all/all.csv") %>%
+  rename(CNTRY = alpha.3,
+         COUNTRY = name) %>%
+  mutate(ISO3 = CNTRY) %>%
+  select(COUNTRY, CNTRY, ISO3)
+#  read.csv("data/LANcET_CCMORTDATA.csv",colClasses=c("CNTRY"="character"))
+
+###   Getting a country list from the HMD
+Countries <- getHMDcountries()
+
+###   Downloading the DEATHS data from the HMD in 5-year age groups by single-year.
+deaths <- rbindlist(lapply(Countries, function(CNTRY){
+  Dat <- readHMDweb(CNTRY = CNTRY, item = "Deaths_5x1", fixup=TRUE, username = myusername, password = mypassword)
+  Dat$CNTRY <- CNTRY
+  Dat}))
+
+###   Downloading the POPULATION data from the HMD.
+pops <- rbindlist(lapply(Countries, function(CNTRY){
+  Dat <- readHMDweb(CNTRY = CNTRY, item = "Population", fixup=TRUE, username = myusername, password = mypassword)
+  Dat$CNTRY <- CNTRY
+  Dat}))
+
+###   Downloading the LIFE TABLE data from the HMD in 5-year age groups by single-year.
+lt <- rbindlist(lapply(Countries, function(CNTRY){
+  Dat <- readHMDweb(CNTRY = CNTRY, item = "bltper_5x1", fixup=TRUE, username = myusername, password = mypassword)
+  Dat$CNTRY <- CNTRY
+  Dat}))
+
+###   Topcoding the age groups to 80+ of the LIFE TABLE data, and summing the ax value.
+lt2 <- lt%>%
+  mutate(Age = ifelse(Age >= 80, 80, Age)) %>%
+  group_by(CNTRY, Year, Age)%>%
+  summarise(ax = sum(ax))
+
+###   Topcoding the age groups of the DEATHS data and summing.
+deaths2 <- deaths %>%
+  mutate(Age = ifelse(Age >=80, 80, Age)) %>%
+  group_by(CNTRY, Year, Age) %>%
+  summarise(deaths = sum(Total) )
+
+###   Recoding the Population data to single year of age
+pops2 <- pops %>%
+  mutate(Age = case_when(
+    Age >= 80 ~ 80,
+    Age >= 75 ~ 75,
+    Age >= 70 ~ 70,
+    Age >= 65 ~ 65,
+    Age >= 60 ~ 60,
+    Age >= 55 ~ 55,
+    Age >= 50 ~ 50,
+    Age >= 45 ~ 45,
+    Age >= 40 ~ 40,
+    Age >= 35 ~ 35,
+    Age >= 30 ~ 30,
+    Age >= 25 ~ 25,
+    Age >= 20 ~ 20,
+    Age >= 15 ~ 15,
+    Age >= 10 ~ 10,
+    Age >= 5 ~5,
+    Age >= 1 ~ 1,
+    TRUE ~ as.numeric(Age)
+  ))  %>%
+  group_by(CNTRY, Year, Age) %>%
+  summarise(Pop= sum(Total1))
+
+###   Joining the POPULATION, DEATHS, and LIFE TABLE data and subseting to the maximum year in the data.
+a <- left_join(pops2, deaths2)
+a <- left_join(a, lt2)
+a <- group_by(a, CNTRY, Age) %>%
+  filter(Year == max(Year)) 
+
+###   Importing the GBD data.
+###   Data is 5-year age groups of mortality rates for Environmental heat and cold exposure for 2006-2015. 
+###   Analysis uses the mean of the last 10 years of data for this death distribution.
+GBD_data <- read.csv("data/GBD_data.csv") %>%
+  #mutate(perdist = log(val)) %>%
+  group_by(countrycode, Age) %>%
+  summarise(meanval = mean(val),
+            upperval = mean(upper),
+            lowerval = mean(lower)) %>%
+  group_by(countrycode) %>%
+  mutate(countmeanval = sum(meanval),
+         countupperval = sum(upperval),
+         countlowerval = sum(lowerval),
+         perdist = (meanval / countmeanval)) %>%
+  rename(CNTRY = countrycode)
+
+################################
+#
+# MAKING THE LIFE TABLES
+#
+################################
+a <-  left_join(a, lancetdata)  %>%
+  select(Age, Pop, CNTRY, deaths, ax, MID, LOW, HIGH) %>%
+  filter(!is.na(MID))
+a2 <- left_join(a, GBD_data) %>%
+  mutate(width = ifelse(Age == 0, 1,
+                        ifelse(Age == 1, 4,5)),
+         mx_base = deaths/Pop,
+         mx_low = (deaths + LOW * perdist)/Pop,
+         mx_mid = (deaths + MID * perdist)/Pop,
+         mx_high = (deaths + HIGH * perdist)/Pop,
+         qx_base = ifelse(Age == 80, 1, mx_base/(1+((width-ax)*mx_base))),
+         qx_low = ifelse(Age == 80, 1, mx_low/(1+((width-ax)*mx_low))),
+         qx_mid = ifelse(Age == 80, 1, mx_mid/(1+((width-ax)*mx_mid))),
+         qx_high = ifelse(Age == 80, 1, mx_high/(1+((width-ax)*mx_high)))) %>%
+  group_by(CNTRY) %>%
+  mutate(lx_base = ifelse(is.na(lag(cumprod(1-qx_base),1)*100000), 100000, lag(cumprod(1-qx_base),1)*100000),
+         dx_base = qx_base*lx_base,
+         Lx_base = ifelse(Age == 80, (lx_base/mx_base), ax * lx_base + (width-ax) * lead(lx_base,1)),
+         Tx_base = rev(cumsum(rev(Lx_base))),
+         ex_base = Tx_base/lx_base,
+         lx_low = ifelse(is.na(lag(cumprod(1-qx_low),1)*100000), 100000, lag(cumprod(1-qx_low),1)*100000),
+         dx_low = qx_low*lx_low,
+         Lx_low = ifelse(Age == 80, (lx_low/mx_low), ax * lx_low + (width-ax) * lead(lx_low,1)),
+         Tx_low = rev(cumsum(rev(Lx_low))),
+         ex_low = Tx_low/lx_low,
+         lx_mid = ifelse(is.na(lag(cumprod(1-qx_mid),1)*100000), 100000, lag(cumprod(1-qx_mid),1)*100000),
+         dx_mid = qx_mid*lx_mid,
+         Lx_mid = ifelse(Age == 80, (lx_mid/mx_mid), ax * lx_mid + (width-ax) * lead(lx_mid,1)),
+         Tx_mid = rev(cumsum(rev(Lx_mid))),
+         ex_mid = Tx_mid/lx_mid,
+         lx_high = ifelse(is.na(lag(cumprod(1-qx_high),1)*100000), 100000, lag(cumprod(1-qx_high),1)*100000),
+         dx_high = qx_high*lx_high,
+         Lx_high = ifelse(Age == 80, (lx_high/mx_high), ax * lx_high + (width-ax) * lead(lx_high,1)),
+         Tx_high = rev(cumsum(rev(Lx_high))),
+         ex_high = Tx_high/lx_high,
+         DIF_LOW = ex_low - ex_base,
+         DIF_MID = ex_mid - ex_base,
+         DIF_HIGH = ex_high - ex_base)
+
+lt_lancet <- a2 %>%
+  filter(Age == 0) %>%
+  mutate(Base_e0 = ex_base,
+         LOW_e0 = ex_low,
+         MID_e0 = ex_mid,
+         HIGH_e0 = ex_high) %>%
+  dplyr::select(CNTRY, Base_e0, LOW_e0, MID_e0, HIGH_e0, DIF_LOW, DIF_MID, DIF_HIGH) %>%
+  ungroup() %>%
+  arrange(DIF_MID) %>%
+  mutate(RANK = row_number(),
+         dif_mid = round(DIF_MID, 2)) %>%
+  left_join(., countrycodes) %>%
+  mutate(COUNTRY = case_when(
+    CNTRY == "FRATNP" ~ "France",
+    CNTRY == "DEUTNP" ~ "Germany",
+    CNTRY == "GBR_NP" ~ "Great Britain",
+    TRUE ~ as.character(COUNTRY)),
+    ISO3 = case_when(
+      CNTRY == "FRATNP" ~ "FRA",
+      CNTRY == "DEUTNP" ~ "DEU",
+      CNTRY == "GBR_NP" ~ "GBR",
+      TRUE ~ as.character(ISO3)),
+    Test = ISO3)
+```
+
+```{r Figure1}
+
+ggplot(lt_lancet, aes(x=RANK, y=DIF_MID, ymin = DIF_LOW, ymax = DIF_HIGH, label=dif_mid)) +
+  geom_pointrange(stat="identity") +
+  geom_point(stat="identity", fill="black", size=8) +
+   geom_hline(yintercept=0) +
+  geom_text(color="white", size=2) +
+  #scale_x_discrete(limits = rev(levels(the_factor)))
+  scale_x_reverse(breaks = lt_lancet$RANK, labels=lt_lancet$COUNTRY) +
+  coord_flip() +
+  theme_bw() +
+  #ylim(-2, 2) +
+  theme(panel.grid.minor = element_blank()) +
+ 
+   labs(y=expression(Delta* e[0]),
+        x= "Country")
+```
+
+```{r Figure2}
+
+data(Europe)
+Europe2 <- append_data(Europe, lt_lancet, key.shp = "iso_a3", key.data = "ISO3", ignore.na = TRUE)
+
+bbeur <- bb(Europe2, xlim = c(0,0.75), ylim=c(0,1), relative = TRUE)
+
+  tm_shape(Europe2) +
+  tm_fill("DIF_MID", title = expression(Delta* e[0 ~italic(MID)]), palette = "YlOrBr", style = "jenks") +
+  tm_borders(alpha = 0.5) +  
+  tm_text("Test" , size="AREA", root=5) +
+  tm_format_Europe() 
+```
+
+```{r suppfig}
+GBD_data <- read.csv("data/GBD_data.csv") %>%
+  #mutate(perdist = log(val)) %>%
+  group_by(countrycode, Age) %>%
+  summarise(meanval = mean(val),
+            upperval = mean(upper),
+            lowerval = mean(lower)) %>%
+  group_by(countrycode) %>%
+  mutate(countmeanval = sum(meanval),
+         countupperval = sum(upperval),
+         countlowerval = sum(lowerval),
+         perdist = (meanval / countmeanval)) %>%
+  rename(CNTRY = countrycode)
+
+ggplot(data=GBD_data, aes(x=Age, y=perdist)) +
+  geom_line(aes(color=CNTRY), alpha=1) +
+  geom_smooth(span=0.3, se=F, col="black", lwd =2) +
+  theme_bw() +
+  theme(legend.position = c(0.8,0.25),
+        legend.title=element_blank(),
+        legend.text=element_text(size=4),
+        legend.key.size = unit(1,"line")) +
+  guides(col = guide_legend(ncol = 4)) +
+  scale_y_log10()+
+  labs(y="log(Mortality Percentage Distribution)",
+       #title = "Mortality distribution of Heat-related mortality in 28 European countries",
+       caption = "Source: Global Burden of Disease")
+
+```
+
+
+
+```{r Table1}
+
+standard <- left_join(a2, ec_agestandard) %>%
+  left_join(., countrycodes) %>%
+  select(Age, CNTRY, COUNTRY, mx_base, mx_low, mx_mid, mx_high, StnrdPop) %>%
+  mutate(ASDR_base = mx_base * StnrdPop,
+         ASDR_low = mx_low * StnrdPop,
+         ASDR_mid = mx_mid * StnrdPop,
+         ASDR_high = mx_high * StnrdPop) %>%
+  group_by(CNTRY, COUNTRY) %>%
+  summarise(ASDR_base = sum(ASDR_base),
+            ASDR_low = sum(ASDR_low),
+            ASDR_mid = sum(ASDR_mid),
+            ASDR_high = sum(ASDR_high)) %>%
+  mutate(ASDR_low = ASDR_low - ASDR_base,
+         ASDR_mid = ASDR_mid - ASDR_base,
+         ASDR_high = ASDR_high - ASDR_base,
+         COUNTRY = case_when(
+           CNTRY == "FRATNP" ~ "France",
+           CNTRY == "DEUTNP" ~ "Germany",
+           CNTRY == "GBR_NP" ~ "Great Britain",
+           TRUE ~ as.character(COUNTRY))) %>%
+  left_join(., europe_standarddr) %>%
+  ungroup() %>%
+  select(-ASDR_base, -CNTRY)
+
+selectcountries <- c("Spain", "Luxembourg", "Italy", "France", "Portugal", "Ireland", "Slovenia", "Croatia", "Switzerland", "Belgium")
+testtbl<- standard %>%
+  group_by(COUNTRY) %>%
+  gather(COD, ASDR, 2:13) %>%
+  filter(!COD %in% c("Circulatorydisease", "Cancer", "ASDR_high", "ASDR_low"),
+         !COUNTRY == "Iceland") %>%
+  mutate(RANK = rank(desc(ASDR)),
+         ASDR = round(ASDR,2),
+         COD = case_when(
+           COD == "Heartdisease" ~ "makecell{Heart\\Disease\\",
+           COD == "LungCancer" ~ "makecell{Lung\\Cancer\\",
+           COD == "Respiratorydiseases" ~ "makecell{Respiratory\\Diseases\\",
+           COD == "Diseasesofthenervoussystem" ~ "makecell{Dis. of the\\Nervous Sys\\",
+           COD == "Colorectalcancer" ~ "makecell{Colorectal\\Cancer\\",
+           COD == "Suicide" ~ "makecell{Suicide\\",
+           COD == "TransportAccidents" ~ "makecell{Transport\\Accidents\\",
+           COD == "ASDR_mid"  ~ "cellcolor{blue!25}makecell{cellcolor{blue!25}Climate\\cellcolor{blue!25}Change\\cellcolor{blue!25}"),
+         Value = paste0(COD, " ", ASDR, "}")) %>%
+  ungroup()%>%
+  arrange(COD, desc(ASDR)) %>%
+  #mutate(COUNTRY = paste0(row_number(),COUNTRY))%>%
+  select(COUNTRY, Value, RANK) %>%
+  spread(RANK, Value) %>%
+  slice(match(selectcountries, COUNTRY))
+
+head(testtbl)
+```
