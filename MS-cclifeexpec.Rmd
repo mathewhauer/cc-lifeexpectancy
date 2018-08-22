@@ -14,7 +14,7 @@ author:
 - name: Alexis R. Santos^2^
   affiliation: Pennsylvania State University
   
-abstract: "Climate change related estimates of excess mortality clearly demonstrate the dramatic impact on public health and human mortality from climate change. However, life expectancy at birth is more easily communicated and understood by the public, and controls for different geographic, economic, and demographic groups. No studies have comprehensively connected excess mortality due to climate change to anticipated reductions in life expectancy. Without properly situating the potential loss of life within the contexts of life expectancy, we risk misrepresenting cost of climate change on mortality. In this paper, we convert excess mortality estimates into potential reductions of life expectancy at birth and report the cost of climate change on human longevity. We find climate change could become the third largest life expectancy reducer behind heart disease and cancer in some European countries. Thus, the cost of inaction on climate change could approach one year of life in some countries."
+abstract: "Climate change related estimates of excess mortality clearly demonstrate the dramatic impact on public health and human mortality from climate change. However, life expectancy at birth is more easily communicated and understood by the public, and controls for different geographic, economic, and demographic groups. No studies have comprehensively connected excess mortality due to climate change to anticipated reductions in life expectancy. Without properly situating the potential loss of life within the contexts of life expectancy, we risk misrepresenting cost of climate change on mortality. In this paper, we convert excess mortality estimates due to increaes in extreme weather from climate change into potential reductions of life expectancy at birth and report the cost of climate change on human longevity. We find climate change extremes could become the third largest life expectancy reducer behind heart disease and cancer in some European countries. Thus, the cost of inaction on climate change could approach one year of life in some countries and possibly exceed that."
 
 keywords: "Climate change, Life expectancy, Mortality, Demography, Excess mortality, Europe, Public health"
 date: "`r format(Sys.time(), '%B %d, %Y')`"
@@ -42,7 +42,7 @@ header-includes:
 
 * Corresponding author. hauer@uga.edu. p: 706-542-9369.
 
-^1^ Carl Vinson Institute of Government, University of Georgia. 201 N. Milledge Ave. Athens, GA USA 30602.
+^1^ Department of Sociology, Florida State University. 201 N. Milledge Ave. Athens, GA USA 30602.
 
 ^2^ Department of Sociology and Criminology, Pennsylvania State University. 901 Oswald Tower, University Park, PA USA 16802.
 
@@ -205,7 +205,7 @@ countrycodes <- read.csv("https://raw.githubusercontent.com/lukes/ISO-3166-Count
   rename(CNTRY = alpha.3,
          COUNTRY = name) %>%
   mutate(ISO3 = CNTRY) %>%
-  select(COUNTRY, CNTRY, ISO3)
+  dplyr::select(COUNTRY, CNTRY, ISO3)
 #  read.csv("data/LANcET_CCMORTDATA.csv",colClasses=c("CNTRY"="character"))
  
 ###   Getting a country list from the HMD
@@ -285,16 +285,16 @@ GBD_data <- read.csv("data/GBD_data.csv") %>%
          perdist = (meanval / countmeanval)) %>%
   rename(CNTRY = countrycode)
 
-ggplot(data=GBD_data, aes(x=Age, y=perdist)) +
-  geom_line(aes(group =CNTRY, col=CNTRY), alpha=0.7) +
-  geom_smooth(span=0.3, se=F, col="black") +
-  theme_bw() +
-  scale_y_log10()+
-  labs(y="log(Mortality Percentage Distribution)")
+# ggplot(data=GBD_data, aes(x=Age, y=perdist)) +
+#   geom_line(aes(group =CNTRY, col=CNTRY), alpha=0.7) +
+#   geom_smooth(span=0.3, se=F, col="black") +
+#   theme_bw() +
+#   scale_y_log10()+
+#   labs(y="log(Mortality Percentage Distribution)")
 
 
 a <-  left_join(a, lancetdata)  %>%
-  select(Age, Pop, CNTRY, deaths, ax, MID, LOW, HIGH) %>%
+  dplyr::select(Age, Pop, CNTRY, deaths, ax, MID, LOW, HIGH, Year) %>%
    filter(!is.na(MID))
 a2 <- left_join(a, GBD_data) %>%
   mutate(width = ifelse(Age == 0, 1,
@@ -367,16 +367,43 @@ lt_lancet <- a2 %>%
 
 Climate change's implications on humanity go far beyond estimates of economic damages [@hsiang2017estimating], estimates of displacement [@rigaud2018groundswell], or human conflict [@barnett2007climate]  but have the potential to lead to the loss of human life [@forzieri2017increasing;@pachauri2014climate]. As impact quantification studies move further from the physical sciences of climate change into the social sciences, properly quantifying and conveying the impact of climate change on public health is of increasing importance [@melillo2014climate;@cloyd2016engagement].
 
-Scholars have long estimated the mortality risks associated with climate change and typically use excess or extra mortality [@forzieri2017increasing;@wilson2017climate;@mcmichael2006climate;@zanobetti2012summer]. Although such estimates are useful, the excess mortality estimates are rather sterile -- one death is a tragedy, a million deaths a statistic -- and difficult to relate to on an individual level. Life expectancy at birth ($e_0$), on the other hand, provides potent comparisons of mortality vectors and converts excess mortality into an intuitively understood metric, relatable to everyone. To our knowledge, no studies exist that comprehensively examine the potential reductions of life expectancy due to climate change. Without properly situating the potential loss of life within the contexts of metrics such as life expectancy, we risk underestimating the impact of climate change on human mortality.
+Scholars have long estimated the mortality risks associated with climate change and typically use excess or extra mortality [@forzieri2017increasing;@wilson2017climate;@mcmichael2006climate;@zanobetti2012summer].
+
+Although such estimates are useful, the excess mortality estimates are rather sterile -- one death is a tragedy, a million deaths a statistic -- and difficult to relate to on an individual level. Life expectancy at birth ($e_0$), on the other hand, provides potent comparisons of mortality vectors and converts excess mortality into an intuitively understood metric, relatable to everyone. To our knowledge, no studies exist that comprehensively examine the potential reductions of life expectancy due to climate change. Without properly situating the potential loss of life within the contexts of metrics such as life expectancy, we risk underestimating the impact of climate change on human mortality.
 
 Using published data on excess mortality [@forzieri2017increasing], we connect climate change excess mortality to life expectancy in a mortality model. By estimating the increase in age-specific mortality rates associated with previously published excess death estimates, we can assess how much climate change could reduce the anticipated longevity of the average person in twenty-eight European countries. This approach allows us to quantify the impact of climate change on human longevity and answer the following questions: What is the cost of inaction on climate change on human longevity? and How does climate change related mortality compare to other mortality vectors? Our results situate climate change mortality within the broader context of human mortality and can be used to inform public health interventions to prevent such futures.
+
+Our results suggest that climate change could emerge as a potent new mortality vector in the 20th century. Mitigation strategies (ie reductions in greenhouse gas emisions) and adaptation strategies (ie outreach efforts, retrofitting public buildings, etc.) would help prevent this new public health concern.
+
+# Background
+## Climate change and human mortality
+
+
+
 
 # Methods and Materials
 We estimate changes in life expectancy by combining three primary datasets: excess mortality data due to meterological hazards related to climate change from Forzieri et al. [@forzieri2017increasing], cause-of-death distributions from the Global Burden of Disease study (GBD) [@GBD;@wang2012age], and life tables from the Human Mortality Database (HMD) [@HMD]. Forzieri et al. [@forzieri2017increasing] focused on the projected excess mortality of heatwaves, coldwaves, wildfires, droughts, river and coastal floods, and windstorms under the business-as-usual greenhouse gas emission scenario (SRES A1B). They modelled long-term, small-area demographic changes in European countries that correspond to a middle-of-the-road socioeconomic scenario (SSP2 with medium fertility, medium mortality, medium migration, and the Global Education Trend education scenario) and based their projected mortality on extrapolations of an exhaustive examination of contemporary disaster databases within spatially rectified, high-resolution gridded datasets. While the disaster data are not standardized across country, Forzeri et al. imputed data in incomplete time periods and countries. This imputation could mask spatial variability at the sub-national level, but here we use their country-aggregated results. Their results represent business-as-usual climate change and human development without incorporating potential adaptation. They found a potential 150,000+ climate change related fatalities per year by the mid 2080s with climate change contributing to 90% of mortality rise as opposed to population changes. These data provide the anticipated fatalities but not the effect these deaths might have on life expectancy.
 
 To convert excess mortality to life expectancy, we use data gathered from the HMD [@HMD] for corresponding European countries in five-year life tables in conjunction with cause-specific mortality data from the GBD [@GBD;@wang2012age]. The HMD comprises only complete, official vital event statistics and represents the most accurate and complete compilation of mortality data available. We allocate excess multi-hazard mortality for each country from supplementary table S8 in Forzieri et al. [@forzieri2017increasing] based on the observed mortality schedule for environmental heat and cold exposure deaths from the GBD for each country in the previous decade. 
 
-We then recalculated age-specific mortality rates in five-year life tables by adding the climate change mortality onto the underlying mortality data and create four subsequent life tables ($baseline$, $low$, $mid$, $high$) using standard life table techniques [@wunsch2013life] based on the published confidence intervals from [@forzieri2017increasing]. We used a variant of the cause-deleted life tables approach [@brand2005approximations;@beltran2008integrated] to measure the impact of excess mortality on life expectancy at birth or $e_0$. Changes in life expectancy are reported based on differentials from $e_0$ between the 2080s and the most recent complete life table in the HMD. Complete life tables for all countries are available in the *Supplementary Dataset* and all computer code to replicate our results are available online[^1].
+
+\begin{table}
+\caption{\textbf{Most recent mortality data available by country in the HMD.}} \label{Table2}
+\begin{tabular}{ll|ll|ll|ll}
+Country & Year & Country & Year & Country & Year & Country & Year \\
+\hline
+AUT     & 2014 & ESP     & 2014 & HUN     & 2014 & NLD     & 2016 \\
+BEL     & 2015 & EST     & 2014 & IRL     & 2014 & NOR     & 2014 \\
+BGR     & 2010 & FIN     & 2015 & ISL     & 2016 & POL     & 2014 \\
+CHE     & 2016 & FRATNP  & 2015 & ITA     & 2014 & PRT     & 2015 \\
+CZE     & 2016 & GBR     & 2016 & LTU     & 2014 & SVK     & 2014 \\
+DEUT    & 2015 & GRC     & 2013 & LUX     & 2014 & SVN     & 2014 \\
+DNK     & 2016 & HRV     & 2016 & LVA     & 2014 & SWE     & 2016 \\
+\hline
+\end{tabular}
+\end{table}
+
+We then recalculated age-specific mortality rates in five-year life tables by adding the climate change mortality onto the underlying mortality data and create four subsequent life tables ($baseline$, $low$, $mid$, $high$) using standard life table techniques [@wunsch2013life] based on the published confidence intervals from [@forzieri2017increasing]. We used a variant of the cause-deleted life tables approach [@brand2005approximations;@beltran2008integrated] to measure the impact of excess mortality on life expectancy at birth or $e_0$. Changes in life expectancy are reported based on differentials from $e_0$ between the 2080s and the most recent complete life table in the HMD (see **Table 1** for the years used). Complete life tables for all countries are available in the *Supplementary Dataset* and all computer code to replicate our results are available online[^1].
 
 [^1]: Replication files are located here: <https://osf.io/fp52x/?view_only=754d9a72a2ea4f6b8e0c193dc9a590d1>
 
@@ -427,7 +454,7 @@ ggplot(data=GBD_data, aes(x=Age, y=perdist)) +
 ## Methods
 We derived a number of additional variables to accomplish our analysis. First, we abridged the life table data from the HMD from ages 100+ to 80+ to conform to the GBD cause-specific mortality schedules.
 
-From the GBD data, we derived variable $t_{x,i}$ as the proportion of deaths, $D$, from each age group $x$ in each country $i$ ($_nt_{x,i}=D_{x,i}^{GBD}/\sum_{\alpha=0}^{80}{_nD_i^{GBD}}$).
+From the GBD data, we derived variable $t_{x,i}$ as the proportion of deaths, $D$, from each age group $x$ in each country $i$ ($_nt_{x,i}=D_{x,i}^{GBD}/\sum_{\alpha=0}^{80}{_nD_{\alpha,i}^{GBD}}$).
 
 We then derived additional $m_x$ rates for each age group $x$ in each country $i$ for each scenario $s$ ($BASE$, $LOW$, $MID$, $HIGH$) from Forzieri et al [@forzieri2017increasing].
 
@@ -440,12 +467,12 @@ _nm_{x,i,BASE} = _nD_{x,i}^{HMD} \,/\, _nP_{x,i}^{HMD}
 
 
 \begin{equation}
-_n\hat{m}_{x,i,s} = (_nD_{x,i}^{HMD} + (\hat{D_s} \,\cdot\, _nt_{x,i}) ) \,/\, _nP_{x,i}^{HMD}
+_n\hat{m}_{x,i,s} = (_nD_{x,i}^{HMD} + (\hat{D_{i,s}} \,\cdot\, _nt_{x,i}) ) \,/\, _nP_{x,i}^{HMD}
 \end{equation}
 
 
 
-where $D_{x,i}$ is the number of deaths in age group $x$ in country $i$ from the HMD, $P_{x,i}$ is the population in age group $x$ from the HMD, $\hat{D_s}$ is the number of deaths from Forzieri et al. [@forzieri2017increasing] under scenario s, and $t_{x,i}$ is the proportion of mortality experienced in each age group $x$ from the GBD. Thus, the anticipated additional mortality due to climate change is added to each age group based on the underlying cause-specific mortality schedule observed between 2006-2015 in the GBD.
+where $D_{x,i}$ is the number of deaths in age group $x$ in country $i$ from the HMD, $P_{x,i}$ is the population in age group $x$ from the HMD, $\hat{D_{i,s}}$ is the number of deaths from Forzieri et al. [@forzieri2017increasing] under scenario s, and $t_{x,i}$ is the proportion of mortality experienced in each age group $x$ from the GBD. Thus, the anticipated additional mortality due to climate change is added to each age group based on the underlying cause-specific mortality schedule observed between 2006-2015 in the GBD.
 
 We then calculated $q_x$ values, or the probability of dying, for each scenario $s$ for each country.
 
@@ -473,7 +500,7 @@ To determine the differences between life expectancy compared to the baseline, w
 
 
 # Results
-We find that climate change could alter life expectancy by `r round(mean(lt_lancet$DIF_MID),2)` years (-2.5 months (`r round(mean(lt_lancet$DIF_LOW),2)` to `r round(mean(lt_lancet$DIF_HIGH),2)` years)) in the average European country (**\autoref{figure1}**). This reduction is comparable to mortality due to influenza and pneumonia [@arias2013united] in the United States. Although the average European country could see a change of `r round(mean(lt_lancet$DIF_MID),2)` years, several countries are likely to experience considerably greater reductions in life expectancy. Luxembourg could see a reduction of up to `r round(lt_lancet$DIF_HIGH[which(lt_lancet$CNTRY == "LUX")],2)*-1` years and the medium-variant of climate hazards could cost the average Spaniard `r round(lt_lancet$DIF_MID[which(lt_lancet$CNTRY == "ESP")],2)*-1` years of life.
+We find that climate change could alter life expectancy by `r round(mean(lt_lancet$DIF_MID),2)` years (-2.5 months (`r round(mean(lt_lancet$DIF_LOW),2)` to `r round(mean(lt_lancet$DIF_HIGH),2)` years)) in the average European country (**\autoref{figure1}**). This reduction is comparable to mortality due to influenza and pneumonia [@arias2013united] in the United States for the year 2000. Although the average European country could see a change of `r round(mean(lt_lancet$DIF_MID),2)` years, several countries are likely to experience considerably greater reductions in life expectancy. Luxembourg could see a reduction of up to `r round(lt_lancet$DIF_HIGH[which(lt_lancet$CNTRY == "LUX")],2)*-1` years and the medium-variant of climate hazards could cost the average Spaniard `r round(lt_lancet$DIF_MID[which(lt_lancet$CNTRY == "ESP")],2)*-1` years of life.
 
 ```{r figure1, echo = FALSE, fig.cap=paste("Change in life expectancy at birth ($e_0$) due to business-as-usual climate change in the 2080s compared to the present $e_0$. We report changes in life expectancies due to climate change for twenty-eight European countries. The central values represent the ensemble median while the stems represent the upper and lower bounds of the inter-model climate variability.\\label{figure1}")}
 
@@ -499,16 +526,18 @@ Our results also suggest climate change mortality differentials are likely to un
 
 ```{r figure2, echo = FALSE, warning= FALSE, message = FALSE, fig.cap=paste("Estimated reduction in life expectancy at birth ($e_0$) by the 2080s under the $MID$ scenario.\\label{map}")}
 
-data(Europe)
+# Europe <- shapefile("data/borders/TM_WORLD_BORDERS-0.3.SHP")
+load(file= "data/Europe.rda")
 Europe2 <- append_data(Europe, lt_lancet, key.shp = "iso_a3", key.data = "ISO3", ignore.na = TRUE)
 
-bbeur <- bb(Europe2, xlim = c(0,0.75), ylim=c(0,1), relative = TRUE)
+# bbeur <- bb(Europe2,  xlim=c(.42, .64), ylim=c(.7, 0.93), relative = TRUE)
 
   tm_shape(Europe2) +
   tm_fill("DIF_MID", title = expression(Delta* e[0 ~italic(MID)]), palette = "YlOrBr", style = "jenks") +
   tm_borders(alpha = 0.5) +  
-  tm_text("Test" , size="AREA", root=5) +
-  tm_format_Europe() 
+  tm_text("Test" , size="AREA", root=5, legend.size.show= F) +
+  tm_legend(legend.frame=T) +
+    NULL
 ```
 
 **\autoref{Table1}** reports the rankings of Age Standardised Death Rates (ASDR) for the leading causes of death in these European countries (ASDR's for other CODs come from Eurostat (online data code: hlth_cd_asdr2)) with our estimates of climate change included. In many European countries, climate change could emerge as a top five killer. Only combined CODs, such as all circulatory diseases or all cancers, exhibit higher ASDRs if climatic hazards are more severe than anticipated for Spain, Luxembourg, and France.
